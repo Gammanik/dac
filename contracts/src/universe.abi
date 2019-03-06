@@ -1,0 +1,157 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Feb  7 09:34:49 2019",
+    "version": "eosio::abi/1.1",
+    "structs": [
+        {
+            "name": "star",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "star_name",
+                    "type": "string"
+                },
+                {
+                    "name": "star_type",
+                    "type": "string"
+                },
+                {
+                    "name": "color",
+                    "type": "string"
+                },
+                {
+                    "name": "average_mass",
+                    "type": "uint64"
+                },
+                {
+                    "name": "average_radius",
+                    "type": "uint64"
+                },
+                {
+                    "name": "planets_ids",
+                    "type": "uint64[]"
+                }
+            ]
+        },
+        {
+            "name": "planet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "planet_name",
+                    "type": "string"
+                },
+                {
+                    "name": "star_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "createstar",
+            "base": "",
+            "fields": [
+                {
+                    "name": "star_name",
+                    "type": "string"
+                },
+                {
+                    "name": "star_type",
+                    "type": "string"
+                },
+                {
+                    "name": "color",
+                    "type": "string"
+                },
+                {
+                    "name": "average_mass",
+                    "type": "uint64"
+                },
+                {
+                    "name": "average_radius",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "addplanet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "star_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "planet_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "createplanet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "planet_name",
+                    "type": "string"
+                },
+                {
+                    "name": "star_id",
+                    "type": "uint64"
+                }
+            ]
+        }
+    ],
+    "types": [],
+    "actions": [
+        {
+            "name": "createstar",
+            "type": "createstar",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "addplanet",
+            "type": "addplanet",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "createplanet",
+            "type": "createplanet",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "star",
+            "index_type": "i64",
+            "key_names": [
+                "id"
+            ],
+            "key_types": [
+                "uint64"
+            ],
+            "type": "star"
+        },
+        {
+            "name": "planet",
+            "index_type": "i64",
+            "key_names": [
+                "id"
+            ],
+            "key_types": [
+                "uint64"
+            ],
+            "type": "planet"
+        }
+    ],
+    "ricardian_clauses": [],
+    "variants": [],
+    "abi_extensions": []
+}
