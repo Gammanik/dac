@@ -21,7 +21,7 @@ describe('Star Contract Tests', function () {
             /**
              * Deploying the contract if not yet deployed
              */
-            let universeContract = new infeos.EOSIODeployer('universe', account);
+            let universeContract = new infeos.EOSIODeployer('dac', account);
             universeContractInstance = await universeContract.deploy();
 
             isContractDeployed = true;
@@ -29,7 +29,7 @@ describe('Star Contract Tests', function () {
             /**
              * Loading already deployed smart contract
              */
-            universeContractInstance = new infeos.EOSIOContract('universe', account);
+            universeContractInstance = new infeos.EOSIOContract('dac', account);
         }
     });
 
