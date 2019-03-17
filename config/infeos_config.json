@@ -28,7 +28,7 @@
     },
     "wallet": "infeos",
     "account": {
-        "name": "infeos",
+        "name": "minergatemgt",
         "permissions": {
             "owner": {
                 "publicKey": "EOS69i58UJci6CQQ1JTAxXUcSFHhKDwMV8CaK3ieCJJsWrQjL3v5H",

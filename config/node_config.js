@@ -17,6 +17,9 @@ const nodeConfig = async () => {
     /**
      * Please setup you initial data below this line
      */
+    // todo: create and deploy eosio.token contract?
+    await EOSIONode.createAccount("eosio.token", config.account.permissions.system.publicKey, config.account.permissions.system.publicKey)
+
 };
 
 module.exports = {

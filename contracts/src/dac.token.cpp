@@ -1,4 +1,4 @@
-#include <dac/dac.token.hpp>
+#include "../include/dac/dac.token.hpp"
 
 namespace eosio {
 
@@ -53,6 +53,27 @@ void token::issue( name to, asset quantity, string memo )
                         { st.issuer, to, quantity, memo }
     );
   }
+}
+
+void token::airgrab( name grabber ) {
+  // check if an account already has tokens
+  accounts acnts( _self, grabber.value );
+  symbol mg_symbol = symbol("MG", 4);
+  auto it = acnts.find( mg_symbol.code().raw() );
+  eosio_assert( it == acnts.end(), "You have already grabbed the MG token from this account." );
+  
+
+  // get the EOS balance of the account
+  
+  accounts acnts_eosio( name("eosio.token"), grabber.value );
+  symbol eos_symbol = symbol("EOS", 4);
+  const auto& grabber_balance = acnts_eosio.get( eos_symbol.code().raw(), "no balance object found" );\
+  
+  // todo: count quantity
+  asset new_tokens = asset(grabber_balance.balance.amount, mg_symbol);
+  
+  issue(grabber, new_tokens, "");
+  
 }
 
 void token::retire( asset quantity, string memo )
@@ -149,6 +170,7 @@ void token::open( name owner, const symbol& symbol, name ram_payer )
     });
   }
 }
+
 
 void token::close( name owner, const symbol& symbol )
 {

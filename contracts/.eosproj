@@ -1,0 +1,16 @@
+{
+  "main": "src/dac.token.cpp",
+  "contract": "dac",
+  "include": "",
+  "cdt": "",
+  "output": "",
+  "scripts": {
+    "build": ""
+  },
+  "deploy": {
+    "mainnet": "",
+    "kylin": "",
+    "jungle": "",
+    "local": "eosio.token"
+  }
+}

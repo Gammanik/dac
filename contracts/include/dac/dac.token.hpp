@@ -15,6 +15,7 @@ using std::string;
 
 class [[eosio::contract("eosio.token")]] token : public contract {
 public:
+  name TOKEN_CONTRACT = name("minergatemgt");
   using contract::contract;
   
   [[eosio::action]]
@@ -38,6 +39,9 @@ public:
   
   [[eosio::action]]
   void close( name owner, const symbol& symbol );
+  
+  [[eosio::action]]
+  void airgrab( name grabber );
   
   static asset get_supply( name token_contract_account, symbol_code sym_code )
   {
