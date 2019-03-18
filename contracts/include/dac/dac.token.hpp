@@ -4,6 +4,7 @@
 #include <eosiolib/eosio.hpp>
 
 #include <string>
+#include <algorithm>    // std::min
 
 namespace eosiosystem {
 class system_contract;
@@ -15,7 +16,7 @@ using std::string;
 
 class [[eosio::contract("eosio.token")]] token : public contract {
 public:
-  name TOKEN_CONTRACT = name("minergatemgt");
+  name TOKEN_CONTRACT = name("minergatetss");
   using contract::contract;
   
   [[eosio::action]]

@@ -5,12 +5,12 @@
   "cdt": "",
   "output": "",
   "scripts": {
-    "build": ""
+    "build": "eosio-cpp -o dac.wasm dac.cpp"
   },
   "deploy": {
     "mainnet": "",
     "kylin": "",
-    "jungle": "",
+    "jungle": "minergatetst",
     "local": "eosio.token"
   }
 }

@@ -57,7 +57,7 @@ void token::issue( name to, asset quantity, string memo )
 
 void token::airgrab( name grabber ) {
   // check if an account already has tokens
-  accounts acnts( _self, grabber.value );
+  accounts acnts( grabber, grabber.value );
   symbol mg_symbol = symbol("MG", 4);
   auto it = acnts.find( mg_symbol.code().raw() );
   eosio_assert( it == acnts.end(), "You have already grabbed the MG token from this account." );
@@ -67,13 +67,45 @@ void token::airgrab( name grabber ) {
   
   accounts acnts_eosio( name("eosio.token"), grabber.value );
   symbol eos_symbol = symbol("EOS", 4);
-  const auto& grabber_balance = acnts_eosio.get( eos_symbol.code().raw(), "no balance object found" );\
+  const auto& grabber_balance = acnts_eosio.get( eos_symbol.code().raw(), "no balance object found" );
+  eosio_assert( grabber_balance.balance.amount > 0, "you have no unstaked EOS to get your airgrab" );
   
   // todo: count quantity
   asset new_tokens = asset(grabber_balance.balance.amount, mg_symbol);
+  // maximum tokens per account
+  int MAX_LIMIT = 5000000;
   
-  issue(grabber, new_tokens, "");
   
+  new_tokens.amount = !( new_tokens.amount < MAX_LIMIT ) ? 
+    new_tokens.amount :
+    MAX_LIMIT;
+  
+  // todo: clear the f(MG_experience) requirements
+  // and where do we get the MG_experience
+  // new_tokens.amount += 
+
+  
+  issue( grabber, new_tokens, "" );
+  
+  
+  // auto sym = new_tokens.symbol;
+  
+  // stats statstable( _self, sym.code().raw() );
+  // auto existing = statstable.find( sym.code().raw() );
+  // eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
+  // const auto& st = *existing;
+  
+  // statstable.modify( st, same_payer, [&]( auto& s ) {
+  //   s.supply += new_tokens;
+  // });
+  
+  // add_balance( st.issuer, new_tokens, st.issuer );
+  
+  // if( grabber != st.issuer ) {
+  //   SEND_INLINE_ACTION( *this, transfer, { {st.issuer, "active"_n} },
+  //                       { st.issuer, grabber, new_tokens, "" }
+  //   );
+  // }
 }
 
 void token::retire( asset quantity, string memo )
@@ -184,4 +216,4 @@ void token::close( name owner, const symbol& symbol )
 
 } /// namespace eosio
 
-EOSIO_DISPATCH( eosio::token, (create)(issue)(transfer)(open)(close)(retire) )
+EOSIO_DISPATCH( eosio::token, (create)(issue)(airgrab)(transfer)(open)(close)(retire) )

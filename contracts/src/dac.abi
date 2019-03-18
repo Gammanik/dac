@@ -28,6 +28,12 @@
         {"name":"quantity", "type":"asset"},
         {"name":"memo", "type":"string"}
      ]
+  }, {
+    "name": "airgrab",
+    "base": "",
+    "fields": [
+      {"name":"grabber", "type": "account_name"}  
+    ]
   },{
       "name": "account",
       "base": "",
