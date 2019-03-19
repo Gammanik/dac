@@ -16,7 +16,7 @@ using std::string;
 
 class [[eosio::contract("eosio.token")]] token : public contract {
 public:
-  name TOKEN_CONTRACT = name("minergatetss");
+  name TOKEN_CONTRACT = name("minergatetst");
   using contract::contract;
   
   [[eosio::action]]

@@ -62,6 +62,10 @@
       "name": "create",
       "type": "create",
       "ricardian_contract": ""
+    }, {
+      "name": "airgrab",
+      "type": "airgrab",
+      "ricardian_contract": ""
     }
 
   ],

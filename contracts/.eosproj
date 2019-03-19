@@ -5,7 +5,7 @@
   "cdt": "",
   "output": "",
   "scripts": {
-    "build": "eosio-cpp -o dac.wasm dac.cpp"
+    "build": ""
   },
   "deploy": {
     "mainnet": "",
