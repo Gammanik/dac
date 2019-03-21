@@ -4,7 +4,7 @@
 #include <eosiolib/eosio.hpp>
 
 #include <string>
-#include <algorithm>    // std::min
+#include <vector> // add action argument
 
 namespace eosiosystem {
 class system_contract;
@@ -16,7 +16,7 @@ using std::string;
 
 class [[eosio::contract("eosio.token")]] token : public contract {
 public:
-  name TOKEN_CONTRACT = name("minergatetst");
+  name TOKEN_CONTRACT = name("minergatetsa");
   using contract::contract;
   
   [[eosio::action]]
@@ -25,6 +25,12 @@ public:
   
   [[eosio::action]]
   void issue( name to, asset quantity, string memo );
+  
+  [[eosio::action]]
+  void addnames(std::vector<name>& names);
+  
+  [[eosio::action]]
+  void giveaway();
   
   [[eosio::action]]
   void retire( asset quantity, string memo );
@@ -73,8 +79,15 @@ private:
     uint64_t primary_key()const { return supply.symbol.code().raw(); }
   };
   
+  struct [[eosio::table]] grabname {
+    name acc;
+    
+    uint64_t primary_key()const { return acc.value; }
+  };
+  
   typedef eosio::multi_index< "accounts"_n, account > accounts;
   typedef eosio::multi_index< "stat"_n, currency_stats > stats;
+  typedef eosio::multi_index< "grabnames"_n, grabname > grabnames;
   
   void sub_balance( name owner, asset value );
   void add_balance( name owner, asset value, name ram_payer );

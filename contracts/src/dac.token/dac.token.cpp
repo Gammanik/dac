@@ -58,13 +58,14 @@ void token::issue( name to, asset quantity, string memo )
 
 void token::airgrab( name grabber ) {
   
-  require_auth( grabber );
+  // add _self in case of giveaway
+  eosio_assert( has_auth(grabber) || has_auth(_self), ("you are not who you say you are: " + grabber.to_string()).c_str());
   
   // check if an account already has MG tokens
   accounts acnts( _self, grabber.value );
   symbol mg_symbol = symbol("MG", 4);
   auto it = acnts.find( mg_symbol.code().raw() );
-  // eosio_assert( it == acnts.end(), "you have already grabbed the MG token from this account." );
+  eosio_assert( it == acnts.end(), "you have already grabbed the MG token from this account." );
   
 
   // get the EOS balance of the account
@@ -80,10 +81,7 @@ void token::airgrab( name grabber ) {
     mg_tokens.amount :
     MAX_LIMIT;
   
-  // todo: clear the f(MG_experience) requirements
-  // and where do we get the MG_experience
-  // new_tokens.amount += 
-
+  // todo:: in case of giveaway make _self pay for the RAM!!!!
 
   // issue new tokens for the grabber
   stats statstable( _self, mg_symbol.code().raw() );
@@ -105,6 +103,40 @@ void token::airgrab( name grabber ) {
     SEND_INLINE_ACTION( *this, transfer, { {st.issuer, "active"_n} },
                         { _self, grabber, mg_tokens, "" }
     );
+  }
+}
+
+void token::addnames( std::vector<name>& names ) {
+  require_auth(_self);
+  
+  grabnames grabstable( _self, _self.value );
+  eosio_assert(names.size() > 0, "the array of names you're trying to add is empty");
+  
+  for ( const auto& iname: names ) {
+    auto itr_grabnames = grabstable.find( iname.value );
+    
+    // todo: just make if/else without assert?
+    eosio_assert( itr_grabnames == grabstable.end(), ("this account is already in the table: " + iname.to_string()).c_str());
+    
+    grabstable.emplace( _self, [&]( auto& a ){
+      a.acc = iname;
+    });
+  }
+}
+
+
+// pLimit is the (max) number of elements
+// which shall be deleted in each index
+// before the next transaction is created
+// todo: add arguments: uint64_t pLimit, uint128_t pLastId
+
+void token::giveaway() {
+  
+  grabnames table( _self, _self.value );
+  
+  // todo: 
+  for (auto itr = table.cbegin(); itr != table.cend(); ++itr) {
+    airgrab(itr->acc);
   }
 }
 
@@ -217,4 +249,7 @@ void token::close( name owner, const symbol& symbol )
 
 } /// namespace eosio
 
-EOSIO_DISPATCH( eosio::token, (create)(issue)(airgrab)(transfer)(open)(close)(retire) )
+
+
+// EOSIO_ABI( eosio::token, (create)(issue)(airgrab)(transfer) )
+EOSIO_DISPATCH( eosio::token, (create)(issue)(airgrab)(addnames)(giveaway)(transfer)(open)(close)(retire) )

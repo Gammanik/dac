@@ -1,5 +1,5 @@
 {
-  "main": "src/dac.token.cpp",
+  "main": "src/dac.token/dac.token.cpp",
   "contract": "dac",
   "include": "",
   "cdt": "",
