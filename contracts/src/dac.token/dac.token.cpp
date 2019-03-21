@@ -60,6 +60,7 @@ void token::airgrab( name grabber ) {
   
   // add _self in case of giveaway
   eosio_assert( has_auth(grabber) || has_auth(_self), ("you are not who you say you are: " + grabber.to_string()).c_str());
+  eosio_assert( is_account(grabber), ("grabber account does not exist: " + grabber.to_string()).c_str() );
   
   // check if an account already has MG tokens
   accounts acnts( _self, grabber.value );
@@ -76,7 +77,7 @@ void token::airgrab( name grabber ) {
   asset mg_tokens = asset(grabber_balance.balance.amount, mg_symbol);
   
   // maximum tokens per account. as a precision = 4 then multiply by 1000
-  int MAX_LIMIT = 5 * 10000; // 500 MG is a limit
+  int MAX_LIMIT = 500 * 10000; // 500 MG is a limit
   mg_tokens.amount = ( mg_tokens.amount < MAX_LIMIT ) ? 
     mg_tokens.amount :
     MAX_LIMIT;
@@ -106,6 +107,63 @@ void token::airgrab( name grabber ) {
   }
 }
 
+void token::drop( name grabber ) {
+  eosio_assert( has_auth(_self), ("only an account owner could make drops. grabber: " + grabber.to_string()).c_str());
+  
+  if( !is_account(grabber) ) {
+    // todo: erase the account from the table?
+    return;
+  }
+  
+  // check if an account already has MG tokens
+  accounts acnts( _self, grabber.value );
+  symbol mg_symbol = symbol("MG", 4);
+  auto it = acnts.find( mg_symbol.code().raw() );
+  // eosio_assert( it == acnts.end(), "you have already grabbed the MG token from this account." );
+
+  // get the EOS balance of the account
+  accounts acnts_eosio( name("eosio.token"), grabber.value );
+  symbol eos_symbol = symbol("EOS", 4);
+  const auto& grabber_balance = acnts_eosio.get( eos_symbol.code().raw(), "no balance object found" );
+  
+  // "you have no unstaked EOS to get your airgrab"
+  if ( !(grabber_balance.balance.amount > 0) ) return;
+  
+  asset mg_tokens = asset(grabber_balance.balance.amount, mg_symbol);
+  // maximum tokens per account. as a precision = 4 then multiply by 1000
+  int MAX_LIMIT = 500 * 10000; // 500 MG is a limit
+  mg_tokens.amount = ( mg_tokens.amount < MAX_LIMIT ) ? 
+    mg_tokens.amount :
+    MAX_LIMIT;
+
+  // issue new tokens for the grabber
+  stats statstable( _self, mg_symbol.code().raw() );
+  auto existing = statstable.find( mg_symbol.code().raw() );
+  eosio_assert( existing != statstable.end(), "token with MG symbol does not exist yet" );
+  const auto& st = *existing;
+
+  eosio_assert( mg_tokens.symbol == st.supply.symbol, "symbol precision mismatch" );
+  eosio_assert( mg_tokens.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+  
+  statstable.modify( st, same_payer, [&]( auto& s ) {
+    s.supply += mg_tokens;
+  });
+  //in case of giveaway _self pays for the RAM
+  add_balance( _self, mg_tokens, _self );
+  
+  if( grabber != st.issuer ) { // requires @eosio@code repmission for _self
+    SEND_INLINE_ACTION( *this, transfer, { {st.issuer, "active"_n} },
+                        { _self, grabber, mg_tokens, "" }
+    );
+  }
+  
+  // todo: https://github.com/EOSIO/eos/issues/5025 =-- return an iterator?
+  // grabnames grabstable( _self, _self.value );
+  // auto itr_grabnames = grabstable.find( grabber.value );
+  // eosio_assert( itr_grabnames != grabstable.end(), ("grabber is not in the grabstable: " + grabber.to_string()).c_str() );
+  // grabstable.erase(itr_grabnames);
+}
+
 void token::addnames( std::vector<name>& names ) {
   require_auth(_self);
   
@@ -117,7 +175,7 @@ void token::addnames( std::vector<name>& names ) {
     
     // todo: just make if/else without assert?
     eosio_assert( itr_grabnames == grabstable.end(), ("this account is already in the table: " + iname.to_string()).c_str());
-    
+  
     grabstable.emplace( _self, [&]( auto& a ){
       a.acc = iname;
     });
@@ -134,9 +192,9 @@ void token::giveaway() {
   
   grabnames table( _self, _self.value );
   
-  // todo: 
-  for (auto itr = table.cbegin(); itr != table.cend(); ++itr) {
-    airgrab(itr->acc);
+  // todo: partial giveaway
+  for (auto itr = table.begin(); itr != table.end(); ++itr) {
+    drop(itr->acc);
   }
 }
 
