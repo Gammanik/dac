@@ -1,5 +1,5 @@
 {
-  "main": "src/dac.token/dac.token.cpp",
+  "main": "src/dac.treasury/dac.treasury.cpp",
   "contract": "dac",
   "include": "",
   "cdt": "",
@@ -10,7 +10,7 @@
   "deploy": {
     "mainnet": "",
     "kylin": "",
-    "jungle": "minergatetst",
+    "jungle": "treasurytest",
     "local": "eosio.token"
   }
 }
