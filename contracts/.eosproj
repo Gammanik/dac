@@ -12,5 +12,8 @@
     "kylin": "",
     "jungle": "minergatetst",
     "local": "eosio.token"
+  },
+  "test": {
+    "npmClient": "yarn"
   }
 }

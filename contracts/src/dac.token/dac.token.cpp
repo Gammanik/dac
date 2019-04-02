@@ -1,4 +1,4 @@
-#include "../include/dac/dac.token.hpp"
+#include "./dac.token.hpp"
 
 namespace eosio {
 
@@ -68,7 +68,7 @@ void token::airgrab( name grabber ) {
   auto it = acnts.find( mg_symbol.code().raw() );
   eosio_assert( it == acnts.end(), "you have already grabbed the MG token from this account." );
   
-
+  
   // get the EOS balance of the account
   accounts acnts_eosio( name("eosio.token"), grabber.value );
   symbol eos_symbol = symbol("EOS", 4);
@@ -78,18 +78,18 @@ void token::airgrab( name grabber ) {
   
   // maximum tokens per account. as a precision = 4 then multiply by 1000
   int MAX_LIMIT = 500 * 10000; // 500 MG is a limit
-  mg_tokens.amount = ( mg_tokens.amount < MAX_LIMIT ) ? 
-    mg_tokens.amount :
-    MAX_LIMIT;
+  mg_tokens.amount = ( mg_tokens.amount < MAX_LIMIT ) ?
+                     mg_tokens.amount :
+                     MAX_LIMIT;
   
   // todo:: in case of giveaway make _self pay for the RAM!!!!
-
+  
   // issue new tokens for the grabber
   stats statstable( _self, mg_symbol.code().raw() );
   auto existing = statstable.find( mg_symbol.code().raw() );
   eosio_assert( existing != statstable.end(), "token with MG symbol does not exist yet" );
   const auto& st = *existing;
-
+  
   eosio_assert( mg_tokens.symbol == st.supply.symbol, "symbol precision mismatch" );
   eosio_assert( mg_tokens.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
   
@@ -120,28 +120,31 @@ void token::drop( name grabber ) {
   symbol mg_symbol = symbol("MG", 4);
   auto it = acnts.find( mg_symbol.code().raw() );
   // eosio_assert( it == acnts.end(), "you have already grabbed the MG token from this account." );
-
+  
   // get the EOS balance of the account
   accounts acnts_eosio( name("eosio.token"), grabber.value );
   symbol eos_symbol = symbol("EOS", 4);
-  const auto& grabber_balance = acnts_eosio.get( eos_symbol.code().raw(), "no balance object found" );
+  const auto& grabber_balance = acnts_eosio.find( eos_symbol.code().raw() );
+  // acnts_eosio.get( eos_symbol.code().raw(), "no balance object found" );
+  
+  if ( grabber_balance == acnts_eosio.end() ) return;
   
   // "you have no unstaked EOS to get your airgrab"
-  if ( !(grabber_balance.balance.amount > 0) ) return;
+  if ( !(grabber_balance->balance.amount > 0) ) return;
   
-  asset mg_tokens = asset(grabber_balance.balance.amount, mg_symbol);
+  asset mg_tokens = asset(grabber_balance->balance.amount, mg_symbol);
   // maximum tokens per account. as a precision = 4 then multiply by 1000
   int MAX_LIMIT = 500 * 10000; // 500 MG is a limit
-  mg_tokens.amount = ( mg_tokens.amount < MAX_LIMIT ) ? 
-    mg_tokens.amount :
-    MAX_LIMIT;
-
+  mg_tokens.amount = ( mg_tokens.amount < MAX_LIMIT ) ?
+                     mg_tokens.amount :
+                     MAX_LIMIT;
+  
   // issue new tokens for the grabber
   stats statstable( _self, mg_symbol.code().raw() );
   auto existing = statstable.find( mg_symbol.code().raw() );
   eosio_assert( existing != statstable.end(), "token with MG symbol does not exist yet" );
   const auto& st = *existing;
-
+  
   eosio_assert( mg_tokens.symbol == st.supply.symbol, "symbol precision mismatch" );
   eosio_assert( mg_tokens.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
   
@@ -175,7 +178,7 @@ void token::addnames( std::vector<name>& names ) {
     
     // todo: just make if/else without assert?
     eosio_assert( itr_grabnames == grabstable.end(), ("this account is already in the table: " + iname.to_string()).c_str());
-  
+    
     grabstable.emplace( _self, [&]( auto& a ){
       a.acc = iname;
     });
@@ -220,6 +223,43 @@ void token::retire( asset quantity, string memo )
   });
   
   sub_balance( st.issuer, quantity );
+}
+
+void token::burn( name account, asset quantity, string memo ) {
+  auto sym = quantity.symbol;
+  eosio_assert( sym.is_valid(), "invalid symbol name" );
+  eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+  
+  stats statstable( _self, sym.code().raw() );
+  auto existing = statstable.find( sym.code().raw() );
+  eosio_assert( existing != statstable.end(), "token with symbol does not exist" );
+  const auto& st = *existing;
+  
+  require_auth( account );
+  eosio_assert( quantity.is_valid(), "invalid quantity" );
+  eosio_assert( quantity.amount > 0, "must retire positive quantity" );
+  
+  eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+  
+  statstable.modify( st, same_payer, [&]( auto& s ) {
+    s.supply -= quantity;
+  });
+  
+  
+  if( account != st.issuer ) {
+    SEND_INLINE_ACTION( *this, transfer, { {account, "active"_n} },
+                        { account, st.issuer, quantity, memo }
+    );
+  }
+  
+  // todo: check if less than 50% left
+  
+  accounts from_acnts( _self, _self.value );
+  const auto& from = from_acnts.get( quantity.symbol.code().raw(), "no balance object found" );
+  eosio_assert( from.balance.amount >= quantity.amount, "now it's impossible to burn more tokens tnan the contract has at once" );
+  // todo: should eosio_assert(  )
+  sub_balance( st.issuer, quantity );
+  
 }
 
 void token::transfer( name    from,
@@ -293,6 +333,15 @@ void token::open( name owner, const symbol& symbol, name ram_payer )
   }
 }
 
+void token::dropnames( ) {
+  require_auth( _self );
+  
+  grabnames _grabnames( _self, _self.value );
+  for(auto itr = _grabnames.begin(); itr != _grabnames.end();) {
+    itr = _grabnames.erase(itr);
+  }
+}
+
 
 void token::close( name owner, const symbol& symbol )
 {
@@ -310,4 +359,4 @@ void token::close( name owner, const symbol& symbol )
 
 
 // EOSIO_ABI( eosio::token, (create)(issue)(airgrab)(transfer) )
-EOSIO_DISPATCH( eosio::token, (create)(issue)(airgrab)(addnames)(giveaway)(transfer)(open)(close)(retire) )
+EOSIO_DISPATCH( eosio::token, (create)(issue)(airgrab)(burn)(addnames)(giveaway)(transfer)(open)(retire)(dropnames) )

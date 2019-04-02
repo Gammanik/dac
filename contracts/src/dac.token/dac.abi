@@ -44,27 +44,39 @@
     "name": "giveaway",
     "base": "",
     "fields": [ ]
-    }, {
-      "name": "account",
-      "base": "",
-      "fields": [
-        {"name":"balance", "type":"asset"}
-      ]
-    },{
-      "name": "currency_stats",
-      "base": "",
-      "fields": [
-        {"name":"supply", "type":"asset"},
-        {"name":"max_supply", "type":"asset"},
-        {"name":"issuer", "type":"account_name"}
-      ]
-    },{
-      "name": "grabname",
-      "base": "",
-      "fields": [
-        {"name":"acc", "type":"account_name"}
-      ]
-    }
+  }, {
+    "name": "account",
+    "base": "",
+    "fields": [
+      {"name":"balance", "type":"asset"}
+    ]
+  },{
+    "name": "currency_stats",
+    "base": "",
+    "fields": [
+      {"name":"supply", "type":"asset"},
+      {"name":"max_supply", "type":"asset"},
+      {"name":"issuer", "type":"account_name"}
+    ]
+  },{
+    "name": "grabname",
+    "base": "",
+    "fields": [
+      {"name":"acc", "type":"account_name"}
+    ]
+  },{
+    "name": "burn",
+    "base": "",
+    "fields": [
+      {"name":"account", "type":"account_name"},
+      {"name":"quantity", "type":"asset"},
+      {"name":"memo", "type":"string"}
+    ]
+  },{
+    "name": "dropnames",
+    "base": "",
+    "fields": [ ]
+  }
   ],
   "actions": [{
     "name": "transfer",
@@ -89,6 +101,14 @@
   }, {
     "name": "giveaway",
     "type": "giveaway",
+    "ricardian_contract": ""
+  }, {
+    "name": "burn",
+    "type": "burn",
+    "ricardian_contract": ""
+  }, {
+    "name": "dropnames",
+    "type": "dropnames",
     "ricardian_contract": ""
   }
 
