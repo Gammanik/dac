@@ -93,7 +93,7 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
   
   
   eosio_assert( total_staked == quantity.amount, 
-    string("tranfsfered amount and votes are different: " + to_string(total_staked) + " : " + to_string(quantity.amount)).c_str() );
+    string("tranfsfered and vote amount are different: " + to_string(quantity.amount) + " : " + to_string(total_staked)).c_str() );
   // put into the table in here
   
   
@@ -105,8 +105,6 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
     eosio_assert( itr_dapp != _dapps.end(), string("the dapp with the given id doesn't exists: " + to_string(vt.id)).c_str() );
     
     _dapps.modify( itr_dapp, same_payer, [&](auto &a) {
-      a.dappname = itr_dapp->dappname;
-      a.description = itr_dapp->description;
       a.votes = itr_dapp->votes + vt.staked;
     });
     
@@ -117,6 +115,7 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
     a.voter = voter;
     a.votes = myvotes;
     a.total = quantity;
+    a.stamp = now();
   });
   
   
@@ -127,7 +126,41 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
 void voter::unstake(name account) {
   require_auth( account );
   
-  // todo: send the money back
+  // todo: check if 3 days before next_drop_time
+  // int 3days = 3 * 24 * 3600;
+  // eosio_assert( now() + 3days < _config.next_drop_time);
+  
+  // todo: check oif 3 days has passed before the vote was made
+  // eosio_assert( itr_voters)
+
+  voters _voters( _self, _self.value );
+  auto itr_voters = _voters.find( account.value );
+  eosio_assert( itr_voters != _voters.end(), "you have nothing to unstake" );
+  
+  // decrease the dapps votes
+  vector<vote_row> votes_vec = itr_voters->votes;
+  dapps _dapps(_self, _self.value);
+  
+  for(vote_row vt : votes_vec) {
+    auto itr_dapp = _dapps.find( vt.id ); // by dapp id
+    eosio_assert( itr_dapp != _dapps.end(), string("the dapp with the given id doesn't exists: " + to_string(vt.id)).c_str() );
+    
+    _dapps.modify( itr_dapp, same_payer, [&](auto &a) {
+      a.votes = itr_dapp->votes - vt.staked;
+    });
+  }
+  
+  //send the tokens back
+  // requires @eosio@code repmission for _self
+  action( permission_level{_self, name("active")},
+  // todo: make contract name
+    name("minergatetst"), name("transfer"),
+    std::make_tuple(_self, account, itr_voters->total,
+        std::string("voter: unstake votes")))
+  .send();
+  
+  
+  _voters.erase(itr_voters);
 }
 
 
@@ -238,8 +271,11 @@ extern "C" {
     else if (code == receiver && action == name("acceptdapp").value) {
       execute_action(name(receiver), name(code), &voter::acceptdapp);
     }
+    else if (code == receiver && action == name("unstake").value) {
+      execute_action(name(receiver), name(code), &voter::unstake);
+    }
     
-    else if (code == receiver && action == name("ttodpfe").value) {
+    else if (code == receiver && action == name("ttod4pfe").value) {
       execute_action(name(receiver), name(code), &voter::droptable);
     }
   }

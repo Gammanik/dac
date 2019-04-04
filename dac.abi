@@ -6,68 +6,30 @@
             "name": "Config",
             "base": "",
             "fields": [
-                {
-                    "name": "last_id",
-                    "type": "uuid"
-                },
-                {
-                    "name": "last_drop_time",
-                    "type": "unix_time"
-                },
-                {
-                    "name": "next_drop_time",
-                    "type": "unix_time"
-                }
+                {"name": "last_id", "type": "uuid"},
+                {"name": "last_drop_time", "type": "unix_time"},
+                {"name": "next_drop_time", "type": "unix_time"}
             ]
-        },
-        {
+        }, {
             "name": "acceptdapp",
             "base": "",
             "fields": [
-                {
-                    "name": "account",
-                    "type": "name"
-                },
-                {
-                    "name": "dappname",
-                    "type": "name"
-                }
-            ]
-        },
-        {
+                {"name": "account", "type": "name" }, 
+                {"name": "dappname", "type": "name"} ]
+        }, { 
             "name": "applydapp",
             "base": "",
             "fields": [
-                {
-                    "name": "dappname",
-                    "type": "name"
-                },
-                {
-                    "name": "description",
-                    "type": "string"
-                }
-            ]
-        },
-        {
+                {"name": "dappname", "type": "name"},
+                {"name": "description", "type": "string"} ]
+        }, {
             "name": "dapps_table",
             "base": "",
             "fields": [
-                {
-                    "name": "id",
-                    "type": "uuid"
-                },
-                {
-                    "name": "dappname",
-                    "type": "name"
-                },
-                {
-                    "name": "description",
-                    "type": "string"
-                },
-                {
-                    "name": "votes",
-                    "type": "asset"
-                }
+                {"name": "id", "type": "uuid"},
+                {"name": "dappname", "type": "name"},
+                {"name": "description","type": "string"},
+                {"name": "votes", "type": "asset"}
             ]
         },
         {
@@ -87,89 +49,58 @@
                     "type": "string"
                 }
             ]
-        },
-        {
-            "name": "unstake",
-            "base": "",
-            "fields": [
-                {
-                    "name": "account",
-                    "type": "name"
-                }
-            ]
-        },
-        {
+        }, {
             "name": "vote_row",
             "base": "",
             "fields": [
-                {
-                    "name": "id",
-                    "type": "uuid"
-                },
-                {
-                    "name": "staked",
-                    "type": "asset"
-                }
+              {"name": "id",  "type": "uuid"},
+              {"name": "staked","type": "asset"}
             ]
         },
         {
             "name": "voters_table",
             "base": "",
             "fields": [
-                {
-                    "name": "voter",
-                    "type": "name"
-                },
-                {
-                    "name": "votes",
-                    "type": "vote_row[]"
-                },
-                {
-                    "name": "total",
-                    "type": "asset"
-                },
-                {
-                    "name": "stamp",
-                    "type": "unix_time"
-                }
+              {"name": "voter", "type": "name"},
+              {"name": "votes", "type": "vote_row[]"},
+              {"name": "total", "type": "asset"},
+              {"name": "stamp", "type": "unix_time"}
             ]
         }, {
-          "name": "droptable",
-          "base": "",
-          "fields": [
-            { "name": "table", "type": "string" }  
-          ]
+            "name": "droptable",
+            "base": "",
+            "fields": [
+                { "name": "table", "type": "string" }
+            ]
+        }, {
+            "name": "unstake",
+            "base": "",
+            "fields": [
+                { "name": "account", "type": "name" }
+            ]
         }
     ],
     "types": [
-        {
-            "new_type_name": "unix_time",
-            "type": "uint32"
-        },
-        {
-            "new_type_name": "uuid",
-            "type": "uint64"
-        }
+      {"new_type_name": "unix_time","type": "uint32"},
+      { "new_type_name": "uuid", "type": "uint64"  }
     ],
     "actions": [
         {
             "name": "acceptdapp",
             "type": "acceptdapp",
             "ricardian_contract": ""
-        },
-        {
+        }, {
             "name": "applydapp",
             "type": "applydapp",
             "ricardian_contract": ""
-        },
-        {
+        }, {
             "name": "unstake",
             "type": "unstake",
             "ricardian_contract": ""
         }, {
-          "name": "droptable",
-          "type": "droptable",
-          "ricardian_contract": ""
+            "name": "droptable",
+            "type": "droptable",
+            "ricardian_contract": ""
         }
     ],
     "tables": [
