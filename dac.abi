@@ -1,10 +1,207 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Tue Apr  2 14:43:48 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Tue Apr  2 14:50:47 2019",
     "version": "eosio::abi/1.1",
-    "structs": [],
-    "types": [],
-    "actions": [],
-    "tables": [],
+    "structs": [
+        {
+            "name": "Config",
+            "base": "",
+            "fields": [
+                {
+                    "name": "last_id",
+                    "type": "uuid"
+                },
+                {
+                    "name": "last_drop_time",
+                    "type": "unix_time"
+                },
+                {
+                    "name": "next_drop_time",
+                    "type": "unix_time"
+                }
+            ]
+        },
+        {
+            "name": "acceptdapp",
+            "base": "",
+            "fields": [
+                {
+                    "name": "account",
+                    "type": "name"
+                },
+                {
+                    "name": "dappname",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "applydapp",
+            "base": "",
+            "fields": [
+                {
+                    "name": "dappname",
+                    "type": "name"
+                },
+                {
+                    "name": "description",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "dapps_table",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uuid"
+                },
+                {
+                    "name": "dappname",
+                    "type": "name"
+                },
+                {
+                    "name": "description",
+                    "type": "string"
+                },
+                {
+                    "name": "votes",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "requests_table",
+            "base": "",
+            "fields": [
+                {
+                    "name": "dappname",
+                    "type": "name"
+                },
+                {
+                    "name": "description",
+                    "type": "string"
+                },
+                {
+                    "name": "response",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "unstake",
+            "base": "",
+            "fields": [
+                {
+                    "name": "account",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "vote_row",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uuid"
+                },
+                {
+                    "name": "staked",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "voters_table",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "votes",
+                    "type": "vote_row[]"
+                },
+                {
+                    "name": "total",
+                    "type": "asset"
+                },
+                {
+                    "name": "stamp",
+                    "type": "unix_time"
+                }
+            ]
+        }, {
+          "name": "droptable",
+          "base": "",
+          "fields": [
+            { "name": "table", "type": "string" }  
+          ]
+        }
+    ],
+    "types": [
+        {
+            "new_type_name": "unix_time",
+            "type": "uint32"
+        },
+        {
+            "new_type_name": "uuid",
+            "type": "uint64"
+        }
+    ],
+    "actions": [
+        {
+            "name": "acceptdapp",
+            "type": "acceptdapp",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "applydapp",
+            "type": "applydapp",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "unstake",
+            "type": "unstake",
+            "ricardian_contract": ""
+        }, {
+          "name": "droptable",
+          "type": "droptable",
+          "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "dapps",
+            "type": "dapps_table",
+            "index_type": "i64",
+            "key_names": ["name"],
+            "key_types": ["uint64"]
+        },
+        {
+            "name": "requests",
+            "type": "requests_table",
+            "index_type": "i64",
+            "key_names": ["id"],
+            "key_types": ["uint64"]
+        },
+        {
+            "name": "settings",
+            "type": "Config",
+            "index_type": "i64",
+            "key_names": ["id"],
+            "key_types": ["uint64"]
+        },
+        {
+            "name": "voters",
+            "type": "voters_table",
+            "index_type": "i64",
+            "key_names": ["name"],
+            "key_types": ["uint64"]
+        }
+    ],
     "ricardian_clauses": [],
     "variants": [],
     "abi_extensions": []

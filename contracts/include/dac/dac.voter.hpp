@@ -33,8 +33,10 @@ public:
   [[eosio::action]]
   void unstake( name account );
   
+  [[eosio::action]]
+  void droptable( std::string tablename );
+  
 private:
-  void handle_vote(name from, name to, asset quantity, std::string memo);
   void handle_vote_memo(std::string memo, name voter, asset quantity );
   
   struct [[eosio::table]] requests_table {

@@ -18,20 +18,16 @@ void voter::handle_transfer( name from, name to, asset quantity, std::string mem
     if (transfer_code == "") { return; }
     
     if (transfer_code == "vt:") {
-      handle_vote(from, to, quantity, memo);
+      // Check the transfer is valid
+      eosio_assert(quantity.symbol == symbol("MG", 4), "you must transfer MG tokens for voting");
+      eosio_assert( quantity.is_valid(), "quantity is not valid." );
+
+      // Strip buy code from memo
+      const string dt = memo.substr(3);
+      handle_vote_memo( dt, from, quantity );
     }
-
+    
    
-}
-
-void voter::handle_vote( name from, name to, asset quantity, std::string memo ) {
-   // Check the transfer is valid
-    eosio_assert(quantity.symbol == symbol("MG", 4), "you must transfer MG tokens for voting");
-    eosio_assert( quantity.is_valid(), "quantity is not valid." );
-
-    // Strip buy code from memo
-    const string dt = memo.substr(3);
-    handle_vote_memo( dt, from, quantity );
 }
 
 
@@ -43,7 +39,7 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
   
   voters _voters( _self, _self.value );
   auto itr_voters = _voters.find( voter.value );
-  eosio_assert( itr_voters != _voters.end(), "you must unstake your votes before you can vote again" );
+  eosio_assert( itr_voters == _voters.end(), "you must unstake your votes before you can vote again" );
   
   vector<vote_row> myvotes;
   
@@ -61,13 +57,13 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
   
   while ( i < dt.length() ) {
     
-    while ( dt[i] != div_id ) {
+    while ( dt[i] != div_id && i < dt.length() ) {
       tmp_id_str += dt[i];
       i++;
     }
     i++; // skip the div_id
     
-    while ( dt[i] != div_token ) {
+    while ( dt[i] != div_token && i < dt.length()) {
       tmp_amount_str += dt[i];
       i++;
     }
@@ -86,7 +82,6 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
     vote_row row = vote_row{dapp_id, asset(amount, symbol("MG", 4))};
     myvotes.push_back( row );
     
-    
     tmp_id_str = "";
     tmp_amount_str = "";
   
@@ -101,8 +96,13 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
     string("tranfsfered amount and votes are different: " + to_string(total_staked) + " : " + to_string(quantity.amount)).c_str() );
   // put into the table in here
   
+  
+  // todo: make this as a sepatate (delayed) transactions?
+  // todo: or make that as a transaction which should be handled by the (oracle) - by hand? 
+  
   for(vote_row vt : myvotes) {
     auto itr_dapp = _dapps.find( vt.id ); // by dapp id
+    eosio_assert( itr_dapp != _dapps.end(), string("the dapp with the given id doesn't exists: " + to_string(vt.id)).c_str() );
     
     _dapps.modify( itr_dapp, same_payer, [&](auto &a) {
       a.dappname = itr_dapp->dappname;
@@ -112,7 +112,8 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
     
   }
   
-  _voters.emplace( voter, [&](auto &a) {
+  // I have to pay for the ram as I "cannot charge RAM to other accounts during notify"
+  _voters.emplace( _self, [&](auto &a) {
     a.voter = voter;
     a.votes = myvotes;
     a.total = quantity;
@@ -142,7 +143,7 @@ void voter::applydapp( name dappname, std::string description ) {
 }
 
 void voter::acceptdapp( name account, name dappname ) {
-  require_auth( account );
+  require_auth( _self );
   
   dapps _dapps( _self, _self.value );
   requests _requests( _self, _self.value );
@@ -160,7 +161,6 @@ void voter::acceptdapp( name account, name dappname ) {
   });
   
   _requests.erase( itr_request );
-  
 }
 
 
@@ -190,29 +190,66 @@ voter::Config voter::_get_config() {
 }
 
 void voter::_update_config(const Config config) {
-//  eosio_assert(has_auth(_self), "Message Error: Only the contract can update config.");
+  eosio_assert(has_auth(_self), "only the contract can update config.");
   ConfigSingleton.set(config, _self);
+}
+
+void voter::droptable(string table) {
+  eosio_assert(has_auth(_self), "only the contract can update do this");
+  
+  dapps _dapps( _self, _self.value );
+  requests _requests( _self, _self.value );
+  voters _voters( _self, _self.value );
+  
+  if (table == "dapps") {
+    for(auto itr = _dapps.begin(); itr != _dapps.end();) {
+      itr = _dapps.erase(itr);
+    }
+  } else if (table == "voters") {
+    for(auto itr = _voters.begin(); itr != _voters.end();) {
+      itr = _voters.erase(itr);
+    }
+  } else if (table == "requests") {
+    for(auto itr = _requests.begin(); itr != _requests.end();) {
+      itr = _requests.erase(itr);
+    }
+  } else {
+    eosio_assert(false, ("no option to delete table: " + table).c_str());
+  }
 }
 
 
 
 
-// extern "C" {
-//   void apply(uint64_t receiver, uint64_t code, uint64_t action) {
-//     if (code == name("eosio.token").value && action == name("transfer").value) {
-//       execute_action(name(receiver), name(code), &voter::handle_transfer);
-//     } 
-//     else if (code == receiver && action == name("applydapp").value) {
-//       execute_action(name(receiver), name(code), &voter::applydapp);
-//     }
-//   }
+extern "C" {
+  void apply(uint64_t receiver, uint64_t code, uint64_t action) {
+    
+    // todo: important:: here should be a name of the account with the MG token
+    // todo: put it in the Singleton?????
+    if (code == name("minergatetst").value && action == name("transfer").value) {
+      execute_action(name(receiver), name(code), &voter::handle_transfer);
+    } 
+    else if (code == receiver && action == name("applydapp").value) {
+      execute_action(name(receiver), name(code), &voter::applydapp);
+    }
+    else if (code == receiver && action == name("droptable").value) {
+      execute_action(name(receiver), name(code), &voter::droptable);
+    }
+    else if (code == receiver && action == name("acceptdapp").value) {
+      execute_action(name(receiver), name(code), &voter::acceptdapp);
+    }
+    
+    else if (code == receiver && action == name("ttodpfe").value) {
+      execute_action(name(receiver), name(code), &voter::droptable);
+    }
+  }
 
-// }
+}
 
 } // eosio namespace
 
 // EOSIO_ABI( eosio::voter, (eosio::applydapp) )
 
-EOSIO_DISPATCH(eosio::voter, (eosio::applydapp))
+// EOSIO_DISPATCH(eosio::voter, (eosio::applydapp))
 
 

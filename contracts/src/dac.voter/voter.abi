@@ -133,6 +133,12 @@
                     "type": "unix_time"
                 }
             ]
+        }, {
+          "name": "droptable",
+          "base": "",
+          "fields": [
+            { "name": "table", "type": "string" }  
+          ]
         }
     ],
     "types": [
@@ -160,6 +166,10 @@
             "name": "unstake",
             "type": "unstake",
             "ricardian_contract": ""
+        }, {
+          "name": "droptable",
+          "type": "droptable",
+          "ricardian_contract": ""
         }
     ],
     "tables": [
@@ -167,29 +177,29 @@
             "name": "dapps",
             "type": "dapps_table",
             "index_type": "i64",
-            "key_names": [],
-            "key_types": []
+            "key_names": ["name"],
+            "key_types": ["uint64"]
         },
         {
             "name": "requests",
             "type": "requests_table",
             "index_type": "i64",
-            "key_names": [],
-            "key_types": []
+            "key_names": ["id"],
+            "key_types": ["uint64"]
         },
         {
             "name": "settings",
             "type": "Config",
             "index_type": "i64",
-            "key_names": [],
-            "key_types": []
+            "key_names": ["id"],
+            "key_types": ["uint64"]
         },
         {
             "name": "voters",
             "type": "voters_table",
             "index_type": "i64",
-            "key_names": [],
-            "key_types": []
+            "key_names": ["name"],
+            "key_types": ["uint64"]
         }
     ],
     "ricardian_clauses": [],
