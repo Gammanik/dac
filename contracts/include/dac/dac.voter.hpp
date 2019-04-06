@@ -36,6 +36,9 @@ public:
   [[eosio::action]]
   void droptable( std::string tablename );
   
+  [[eosio::action]]
+  void deletedapp( uuid dappid );
+  
 private:
   void handle_vote_memo(std::string memo, name voter, asset quantity );
   

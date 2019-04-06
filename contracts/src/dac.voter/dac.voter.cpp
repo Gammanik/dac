@@ -251,6 +251,16 @@ void voter::droptable(string table) {
   }
 }
 
+void voter::deletedapp(uuid dappid) {
+  require_auth(_self);
+  
+  dapps _dapps( _self, _self.value );
+  auto itr_dapp = _dapps.find( dappid );
+  eosio_assert( itr_dapp != _dapps.end(), "dapp with the given id does not exists" );
+  
+  _dapps.erase(itr_dapp); 
+}
+
 
 
 
@@ -273,6 +283,9 @@ extern "C" {
     }
     else if (code == receiver && action == name("unstake").value) {
       execute_action(name(receiver), name(code), &voter::unstake);
+    }
+    else if (code == receiver && action == name("deletedapp").value) {
+      execute_action(name(receiver), name(code), &voter::deletedapp);
     }
     
     else if (code == receiver && action == name("ttod4pfe").value) {
