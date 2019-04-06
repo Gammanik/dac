@@ -1,5 +1,5 @@
 {
-  "main": "./contracts/src/dac.staker/dac.staker.cpp",
+  "main": "./contracts/src/dac.voter/dac.voter.cpp",
   "contract": "dac",
   "include": "",
   "cdt": "",
@@ -10,7 +10,7 @@
   "deploy": {
     "mainnet": "",
     "kylin": "",
-    "jungle": "staketestnet",
+    "jungle": "votertestnet",
     "local": ""
   },
   "test": {

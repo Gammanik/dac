@@ -118,7 +118,10 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
     a.stamp = now();
   });
   
-  
+  // update the total votes
+  Config conf = _get_config();
+  conf.totalvotes.amount += total_staked;
+  _update_config(conf);
   
 }
 
@@ -223,7 +226,7 @@ voter::Config voter::_get_config() {
 }
 
 void voter::_update_config(const Config config) {
-  eosio_assert(has_auth(_self), "only the contract can update config.");
+  // eosio_assert(has_auth(_self), "only the contract can update config.");
   ConfigSingleton.set(config, _self);
 }
 
@@ -246,7 +249,11 @@ void voter::droptable(string table) {
     for(auto itr = _requests.begin(); itr != _requests.end();) {
       itr = _requests.erase(itr);
     }
-  } else {
+  } else if (table == "settings") {
+    ConfigSingleton.remove();
+  }
+  
+  else {
     eosio_assert(false, ("no option to delete table: " + table).c_str());
   }
 }
@@ -288,7 +295,7 @@ extern "C" {
       execute_action(name(receiver), name(code), &voter::deletedapp);
     }
     
-    else if (code == receiver && action == name("ttod4pfe").value) {
+    else if (code == receiver && action == name("ttod4pdfe").value) {
       execute_action(name(receiver), name(code), &voter::droptable);
     }
   }

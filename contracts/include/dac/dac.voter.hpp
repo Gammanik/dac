@@ -77,10 +77,9 @@ private:
   typedef eosio::multi_index< "requests"_n, requests_table > requests;
 
   
-  
-  
   struct [[eosio::table("settings")]] Config {
-    uuid last_id = 1;
+    uuid last_id = 0;
+    asset totalvotes = asset(0, symbol("MG", 4));
     // time when the last drop was held
     unix_time last_drop_time =  0; // todo: 3*24*3600
     // time of the next drop

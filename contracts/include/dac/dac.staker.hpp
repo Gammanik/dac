@@ -38,6 +38,7 @@ private:
   };
   
   typedef eosio::multi_index< "dapps"_n, dapps_table > dapps;
+  
 };
 
 } /// namespace eosio
