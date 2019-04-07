@@ -16,7 +16,7 @@ using std::string;
 
 class [[eosio::contract("eosio.token")]] token : public contract {
 public:
-  name TOKEN_CONTRACT = name("minergatetst");
+  name TOKEN_CONTRACT = name("minergatetsa");
   using contract::contract;
   
   [[eosio::action]]
@@ -36,6 +36,9 @@ public:
   void retire( asset quantity, string memo );
   
   [[eosio::action]]
+  void burn( name account, asset quantity, string memo );
+  
+  [[eosio::action]]
   void transfer( name    from,
                  name    to,
                  asset   quantity,
@@ -49,6 +52,9 @@ public:
   
   [[eosio::action]]
   void airgrab( name grabber );
+  
+  [[eosio::action]]
+  void dropnames();
   
   [[eosio::action]]
   void drop( name grabber );

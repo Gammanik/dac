@@ -1,0 +1,19 @@
+{
+  "main": "./contracts/src/dac.voter/dac.voter.cpp",
+  "contract": "dac",
+  "include": "",
+  "cdt": "",
+  "output": "",
+  "scripts": {
+    "build": ""
+  },
+  "deploy": {
+    "mainnet": "",
+    "kylin": "",
+    "jungle": "votertestnet",
+    "local": ""
+  },
+  "test": {
+    "npmClient": "yarn"
+  }
+}
