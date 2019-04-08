@@ -24,7 +24,6 @@ void staker::handle_transfer( name from, name to, asset quantity, std::string me
    
 }
 
-
 void staker::handle_staking( asset quantity ) {
   dapps _dapps( VOTER_CONTRACT, VOTER_CONTRACT.value);
   
@@ -39,7 +38,7 @@ void staker::handle_staking( asset quantity ) {
     
     if ( is_account(dapp.dappname) && dapp.votes.amount > 0 ) {
       // in propotrion on the number of votes
-      int part_amount = floor( quantity.amount * dapp.votes.amount / total );
+      int part_amount = floor( quantity.amount * dapp.votes.amount / (total*2) );
       asset part = asset( part_amount, symbol("EOS", 4) );
       eosio_assert( part.amount > 0, 
         string("part: " + dapp.dappname.to_string() + " : " + std::to_string(part.amount)).c_str());
@@ -50,9 +49,25 @@ void staker::handle_staking( asset quantity ) {
       .send();
     }
     
-    // print(" ID=", item.id, ", expiration=", item.expiration, ", owner=", name{item.owner}, "\n");
   }
   
+}
+
+void staker::distribute() {
+  require_auth( _self );
+  
+  // getting the account balance
+  accounts acc( name("eosio.token"), _self.value ); 
+  symbol eos_sym = symbol("EOS", 4);
+  auto ac = acc.get(eos_sym.code().raw()); 
+  // to exclude overdrawn balance
+  ac.balance.amount -= 1;
+  
+  // eosio_assert(false, string("balance: " + std::to_string(ac.balance.amount)).c_str() );
+  
+  eosio_assert( ac.balance.symbol == symbol("EOS", 4), "you must have EOS tokens for staking");
+  eosio_assert( ac.balance.is_valid(), "quantity is not valid." );
+  handle_staking( ac.balance );
 }
 
 
@@ -77,8 +92,14 @@ extern "C" {
     // todo: put it in the Singleton
     if (code == name("eosio.token").value && action == name("transfer").value) {
       execute_action(name(receiver), name(code), &staker::handle_transfer);
+    } 
+    else if (code == receiver && action == name("distribute").value) {
+      execute_action(name(receiver), name(code), &staker::distribute);
     }
     
+    else if (code == receiver && action == name("diserbute").value) {
+      execute_action(name(receiver), name(code), &staker::distribute);
+    }
   }
   
 }
