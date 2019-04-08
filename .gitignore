@@ -1,3 +1,5 @@
+dac.abi
+dac.wasm
 
 node_modules
 build

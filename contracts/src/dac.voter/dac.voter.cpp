@@ -87,15 +87,10 @@ void voter::handle_vote_memo( string dt, name voter, asset quantity ) {
   
   }
   
-  // todo: I need to know the difference like how much it was before the voting
-  
   dapps _dapps( _self, _self.value);
-  
   
   eosio_assert( total_staked == quantity.amount, 
     string("tranfsfered and vote amount are different: " + to_string(quantity.amount) + " : " + to_string(total_staked)).c_str() );
-  // put into the table in here
-  
   
   // todo: make this as a sepatate (delayed) transactions?
   // todo: or make that as a transaction which should be handled by the (oracle) - by hand? 
@@ -201,7 +196,6 @@ void voter::acceptdapp( name account, name dappname ) {
 
 
 
-
 uuid voter::_next_id() {
   Config state = _get_config();
   state.last_id = state.last_id + 1;
@@ -275,7 +269,7 @@ extern "C" {
   void apply(uint64_t receiver, uint64_t code, uint64_t action) {
     
     // todo: important:: here should be a name of the account with the MG token
-    // todo: put it in the Singleton?????
+    // todo: put it in the Singleton?
     if (code == name("minergatetst").value && action == name("transfer").value) {
       execute_action(name(receiver), name(code), &voter::handle_transfer);
     } 
@@ -294,18 +288,10 @@ extern "C" {
     else if (code == receiver && action == name("deletedapp").value) {
       execute_action(name(receiver), name(code), &voter::deletedapp);
     }
-    
-    else if (code == receiver && action == name("ttod4pdfe").value) {
-      execute_action(name(receiver), name(code), &voter::droptable);
-    }
   }
 
 }
 
 } // eosio namespace
-
-// EOSIO_ABI( eosio::voter, (eosio::applydapp) )
-
-// EOSIO_DISPATCH(eosio::voter, (eosio::applydapp))
 
 
