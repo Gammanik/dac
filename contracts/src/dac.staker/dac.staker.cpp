@@ -29,21 +29,24 @@ void staker::handle_staking( asset quantity ) {
   dapps _dapps( VOTER_CONTRACT, VOTER_CONTRACT.value);
   
   // todo: add total_staked field to the voting contract
-  // for(auto itr = _dapps.begin(); itr != _dapps.end();) {
-  //     itr = _dapps.erase(itr);
-  // }
   
-  int size = std::distance(_dapps.cbegin(), _dapps.cend()); // = 0?? why
-  // int size = 3; // * 2 because delegated to cpu and ram 50/50
-  
-  // todo: bug? working 
-  asset part = asset( floor(quantity.amount / size*2 )  ,symbol("EOS", 4));
+  asset total_asset = _get_voter_total_votes();
+  int total = total_asset.amount;
+  eosio_assert( total > 0,
+    string("total votes is 0. Cannot stake: " + std::to_string(total)).c_str());
   
   for( const auto& dapp : _dapps ) {
-    if ( is_account(dapp.dappname) ) {
+    
+    if ( is_account(dapp.dappname) && dapp.votes.amount > 0 ) {
+      // in propotrion on the number of votes
+      int part_amount = floor( quantity.amount * dapp.votes.amount / total );
+      asset part = asset( part_amount, symbol("EOS", 4) );
+      eosio_assert( part.amount > 0, 
+        string("part: " + dapp.dappname.to_string() + " : " + std::to_string(part.amount)).c_str());
+    
       action( permission_level{_self, name("active")},
         name("eosio"), name("delegatebw"),
-        std::make_tuple( _self, name(dapp.dappname), part, part, false ))
+        std::make_tuple( _self, name(dapp.dappname), part, part, false) )
       .send();
     }
     
@@ -54,23 +57,15 @@ void staker::handle_staking( asset quantity ) {
 
 
 
-
-
-
-
-// voter::Config voter::_get_config() {
-//   Config config;
+asset staker::_get_voter_total_votes() {
+  settings config_voter{VOTER_CONTRACT, VOTER_CONTRACT.value };
+  auto itr_config = config_voter.find( name("settings").value );
   
-//   if (ConfigSingleton.exists()) {
-//     config = ConfigSingleton.get();
-//   } else {
-//     config = Config{};
-//     ConfigSingleton.set(config, _self);
-//   }
+  eosio_assert( itr_config != config_voter.end(), 
+    string("the settings does not exists on the voter contract: " + VOTER_CONTRACT.to_string()).c_str() );
   
-//   return config;
-// }
-
+  return itr_config->totalvotes;
+}
 
 
 
@@ -79,7 +74,7 @@ extern "C" {
   void apply(uint64_t receiver, uint64_t code, uint64_t action) {
     
     // todo: important:: here should be a name of the account with the MG token
-    // todo: put it in the Singleton?????
+    // todo: put it in the Singleton
     if (code == name("eosio.token").value && action == name("transfer").value) {
       execute_action(name(receiver), name(code), &staker::handle_transfer);
     }
@@ -90,9 +85,5 @@ extern "C" {
 
 
 } // eosio namespace
-
-// EOSIO_ABI( eosio::voter, (eosio::applydapp) )
-
-// EOSIO_DISPATCH(eosio::voter, (eosio::applydapp))
 
 
